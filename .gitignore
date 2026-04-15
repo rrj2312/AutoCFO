@@ -1,1 +1,12 @@
 .env
+backend/.env
+
+# python cache
+__pycache__/
+*.pyc
+
+# node modules (if any frontend)
+node_modules/
+
+# logs
+*.log

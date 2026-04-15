@@ -1,0 +1,81 @@
+{
+    "name": "AutoCFO — Daily Morning Summary",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "cronExpression",
+                            "expression": "0 8 * * *"
+                        }
+                    ]
+                }
+            },
+            "name": "Cron — 8 AM Daily",
+            "type": "n8n-nodes-base.cron",
+            "typeVersion": 1,
+            "position": [
+                240,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://localhost:8000/dashboard/demo_001",
+                "method": "GET"
+            },
+            "name": "Fetch Dashboard",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 3,
+            "position": [
+                460,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "from": "whatsapp:+14155238886",
+                "to": "={{$env.OWNER_WHATSAPP_TO}}",
+                "message": "☀️ Good morning from AutoCFO\nYour financial summary for today:\nHealth Score: {{$json[\"health_score\"]}}/100\nCash Runway: {{$json[\"cash_runway\"]}} days\nUnresolved Risks: {{$json[\"recent_risks\"].length}}"
+            },
+            "name": "Send Morning Summary",
+            "type": "n8n-nodes-base.twilio",
+            "typeVersion": 1,
+            "position": [
+                680,
+                300
+            ],
+            "credentials": {
+                "twilioApi": {
+                    "id": "1",
+                    "name": "Twilio"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Cron — 8 AM Daily": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch Dashboard",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Dashboard": {
+            "main": [
+                [
+                    {
+                        "node": "Send Morning Summary",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

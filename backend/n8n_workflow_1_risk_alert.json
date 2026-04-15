@@ -1,0 +1,53 @@
+{
+    "name": "AutoCFO — Risk Alert WhatsApp",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "risk-alert",
+                "responseMode": "onReceived",
+                "responseData": "allEntries"
+            },
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                240,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "from": "whatsapp:+14155238886",
+                "to": "={{$env.OWNER_WHATSAPP_TO}}",
+                "message": "🚨 AutoCFO Alert\nRisk detected: {{$json[\"risk_type\"]}}\n{{$json[\"description\"]}}\nAction taken: {{$json[\"recommended_action\"]}}"
+            },
+            "name": "Send WhatsApp Alert",
+            "type": "n8n-nodes-base.twilio",
+            "typeVersion": 1,
+            "position": [
+                460,
+                300
+            ],
+            "credentials": {
+                "twilioApi": {
+                    "id": "1",
+                    "name": "Twilio"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Send WhatsApp Alert",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}
