@@ -2,7 +2,7 @@ import io
 import csv
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from services.supabase_client import supabase
-from services.n8n_trigger import trigger_risk_alert_webhook
+
 
 router = APIRouter()
 

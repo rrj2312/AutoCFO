@@ -7,6 +7,7 @@ __pycache__/
 
 # node modules (if any frontend)
 node_modules/
+backend/node_modules/
 
 # logs
 *.log
