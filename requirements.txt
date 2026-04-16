@@ -1,6 +1,0 @@
-google-generativeai
-groq
-python-dotenv
-requests
-fastapi
-uvicorn
