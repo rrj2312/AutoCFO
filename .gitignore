@@ -1,4 +1,4 @@
-.env
+ai-ml/.env
 backend/.env
 
 # python cache
