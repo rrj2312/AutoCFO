@@ -1,0 +1,16 @@
+date,description,debit,credit,upi_id,balance
+2026-01-06,Blue Dart Courier - Invoice Delivery,350,,bluedart@upi,346650
+2026-01-09,Tea & Snacks - Staff,180,,teashop@upi,346470
+2026-01-14,Printout - Invoice Copies,120,,printshop@upi,346350
+2026-01-21,Auto Fare - Bank Visit,85,,driver@upi,346265
+2026-01-28,Courier - Document Delivery,420,,bluedart@upi,345845
+2026-02-04,Tea & Snacks - Staff,200,,teashop@upi,345645
+2026-02-08,Blue Dart Courier,380,,bluedart@upi,345265
+2026-02-11,Printout + Stationery,250,,printshop@upi,345015
+2026-02-19,UPI Received - KK Stores,,3500,kkstores@upi,348515
+2026-02-23,Auto Fare - Delivery Trip,140,,driver@upi,348375
+2026-03-02,Tea & Snacks - Staff,180,,teashop@upi,348195
+2026-03-06,Blue Dart Courier - Urgent,550,,bluedart@upi,347645
+2026-03-11,Printout - GST Documents,300,,printshop@upi,347345
+2026-03-16,Auto Fare,95,,driver@upi,347250
+2026-03-18,Tea & Snacks,160,,teashop@upi,347090

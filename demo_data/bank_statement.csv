@@ -1,0 +1,39 @@
+date,description,debit,credit,balance
+2026-01-02,Opening Balance,,,285000
+2026-01-05,Client Payment - Sunrise Schools,,62000,347000
+2026-01-08,Vendor Payment - Chennai Paper Mills,48000,,299000
+2026-01-10,Client Payment - ABC Stationery Hub,,35000,334000
+2026-01-13,Salary - January,35000,,299000
+2026-01-15,Vendor Payment - Ink & Supplies Co,14000,,285000
+2026-01-18,Client Payment - City Book House,,28000,313000
+2026-01-20,GST Payment - January,24000,,289000
+2026-01-22,Electricity + Rent,17500,,271500
+2026-01-25,Client Payment - Govt School Tender,,85000,356500
+2026-01-27,Vendor Payment - Packaging Supplies,11000,,345500
+2026-01-30,Client Payment - Rajan Stationery,,22000,367500
+2026-02-03,Vendor Payment - Chennai Paper Mills,55000,,312500
+2026-02-05,Client Payment - ABC Stationery Hub,,40000,352500
+2026-02-07,Vendor Payment - Bulk Paper Restock,72000,,280500
+2026-02-10,Salary - February,35000,,245500
+2026-02-12,Client Payment - Sunrise Schools,,55000,300500
+2026-02-14,Vendor Payment - Ink & Supplies Co,18000,,282500
+2026-02-16,Client Payment - Sri Murugan Stationery,,68500,351000
+2026-02-18,Vendor Payment - Packaging Supplies,15000,,336000
+2026-02-20,GST Payment - February,28000,,308000
+2026-02-22,Electricity + Rent,17500,,290500
+2026-02-24,Vendor Payment - Office Stationery,22000,,268500
+2026-02-26,Client Payment - City Book House,,18000,286500
+2026-02-28,Vendor Payment - Urgent Restock - Paper Mills,68000,,218500
+2026-03-01,Vendor Payment - Bulk Ink Order,42000,,176500
+2026-03-03,Client Payment - Small Retailer - KK Stores,,12000,188500
+2026-03-05,Vendor Payment - Packaging + Labels,28000,,160500
+2026-03-07,Salary - March,35000,,125500
+2026-03-09,Client Payment - Rajan Stationery,,8000,133500
+2026-03-10,Vendor Payment - Chennai Paper Mills,38000,,95500
+2026-03-12,Electricity + Rent,17500,,78000
+2026-03-13,Vendor Payment - Miscellaneous Supplies,14000,,64000
+2026-03-14,Client Payment - Walk-in Customer,,5500,69500
+2026-03-15,Vendor Payment - Ink Cartridges,12000,,57500
+2026-03-16,Staff Advance,8000,,49500
+2026-03-17,Telephone + Internet,3500,,46000
+2026-03-18,Petty Cash Withdrawal,4000,,42000

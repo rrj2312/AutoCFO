@@ -1,0 +1,61 @@
+{
+  "business": {
+    "id": "demo_001",
+    "name": "Ravi Traders",
+    "owner": "Ravi Shankar",
+    "industry": "wholesale stationery",
+    "gst_number": "33AABCT1332L1ZX",
+    "city": "Chennai",
+    "state": "Tamil Nadu",
+    "years_in_business": 4,
+    "monthly_revenue_range": "3-4 lakhs"
+  },
+  "current_financials": {
+    "current_balance": 42000,
+    "avg_daily_expense": 6500,
+    "cash_runway_days": 6,
+    "last_month_revenue": 351000,
+    "last_month_expenses": 309000
+  },
+  "planted_problems": [
+    {
+      "id": 1,
+      "type": "Cash Crunch",
+      "severity": "high",
+      "detail": "Balance ₹42,000 with avg daily expense ₹6,500 = only 6 days of runway",
+      "what_ai_should_say": "Cash will run out in 6 days if no payments are received"
+    },
+    {
+      "id": 2,
+      "type": "Overdue Invoice",
+      "severity": "high",
+      "detail": "Sri Murugan Stationery paid ₹68,500 on Feb 16 but no payment since. A second expected payment of ₹45,000 is now 18 days overdue",
+      "what_ai_should_say": "Client owes ₹45,000 that is 18 days past due"
+    },
+    {
+      "id": 3,
+      "type": "GST Deadline",
+      "severity": "high",
+      "detail": "Feb GSTR-3B not yet filed. ₹28,000 tax liability pending. Deadline is 20th March — 4 days away",
+      "what_ai_should_say": "GST filing overdue with ₹28,000 penalty risk"
+    }
+  ],
+  "overdue_invoices": [
+    {
+      "client": "Sri Murugan Stationery",
+      "amount": 45000,
+      "invoice_date": "2026-02-28",
+      "due_date": "2026-03-15",
+      "days_overdue": 18,
+      "contact": "9841XXXXXX"
+    }
+  ],
+  "gst_status": {
+    "last_filed_period": "2026-01",
+    "last_filing_date": "2026-02-18",
+    "pending_period": "2026-02",
+    "deadline": "2026-03-20",
+    "days_remaining": 4,
+    "pending_liability": 28000
+  }
+}
