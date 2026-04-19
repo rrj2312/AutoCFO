@@ -1,5 +1,6 @@
 ai-ml/.env
 backend/.env
+.env
 
 # python cache
 __pycache__/
