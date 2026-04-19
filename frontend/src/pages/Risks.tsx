@@ -27,8 +27,8 @@ function RiskCard({ risk }: { risk: Risk }) {
     }
     setExpanded(true);
     setLoading(true);
-    const text = await explainRisk(risk.id);
-    setExplanation(text);
+    const res = await explainRisk(risk.id);
+    setExplanation(res.data.explanation || "No explanation available.");
     setLoading(false);
   }
 
@@ -110,10 +110,18 @@ export default function Risks() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getRisks().then((data) => {
-      setRisks(data as Risk[]);
-      setLoading(false);
-    });
+    getRisks()
+      .then((res) => {
+        const data = res.data?.risks || res.data;
+        setRisks(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch risks:', err);
+        setRisks([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   if (loading) return <RisksSkeleton />;

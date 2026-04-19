@@ -141,19 +141,19 @@ export const mockActions = [
 export const mockWhatsAppMessages = [
   {
     id: 'w1',
-    text: 'AutoCFO Daily Summary — Apr 16\n\nFixed 3 risks today:\n• Sent 2 payment reminders (₹80K)\n• Flagged GST deadline in 9 days\n• Optimized cash flow by ₹61K',
+    text: 'AutoCFO Daily Summary\n\nDetected 3 risks today:\n• Cash crunch expected in 6 days\n• ₹68,500 overdue from Sri Murugan Stationery\n• GST filing due in 4 days\n\nActions taken:\n• Sent payment reminder\n• Triggered WhatsApp alert\n• Tracking GST deadline',
     time: '8:00 AM',
     isBot: true,
   },
   {
     id: 'w2',
-    text: 'Your financial health score dropped from 71 to 67.\n\nMain reason: Cash runway is now 14 days. Action recommended.',
+    text: 'Your financial health score dropped from 71 to 62.\n\nMain reason: Reduced cash runway.',
     time: '8:01 AM',
     isBot: true,
   },
   {
     id: 'w3',
-    text: 'Reminder: GSTR-3B due Apr 25. Estimated liability ₹38,200. Reply "FILE NOW" to initiate.',
+    text: 'Reply "FILE NOW" to initiate GST filing.',
     time: '10:00 AM',
     isBot: true,
   },

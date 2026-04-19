@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from services.supabase_client import supabase
+from config import DEMO_MODE
 
 router = APIRouter()
 
@@ -14,6 +15,31 @@ class ActionRequest(BaseModel):
 
 @router.get("/actions/{business_id}")
 def get_actions(business_id: str):
+    if DEMO_MODE:
+        return [
+            {
+                "id": "da1",
+                "action": "Sent payment reminder to Sri Murugan Stationery (₹68,500)",
+                "status": "completed",
+                "timestamp": "2 minutes ago",
+                "category": "receivables"
+            },
+            {
+                "id": "da2",
+                "action": "Triggered cash crunch alert via WhatsApp",
+                "status": "completed",
+                "timestamp": "5 minutes ago",
+                "category": "cashflow"
+            },
+            {
+                "id": "da3",
+                "action": "GST deadline tracked (due in 4 days)",
+                "status": "pending",
+                "timestamp": "10 minutes ago",
+                "category": "gst"
+            }
+        ]
+    
     try:
         res = supabase.table("actions") \
             .select("*") \

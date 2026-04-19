@@ -4,31 +4,28 @@ from datetime import date, timedelta
 
 router = APIRouter()
 
+from config import DEMO_MODE
+
 
 def calc_health_score(risks: list) -> int:
     """
     Starts at 100. Deducts points per risk severity.
-    high = -15, medium = -7, low = -3
+    high = -20, medium = -10, low = -5
     """
     score = 100
-    deductions = {"high": 15, "medium": 7, "low": 3}
+    deductions = {"high": 20, "medium": 10, "low": 5}
     for risk in risks:
         score -= deductions.get(risk.get("severity", "low"), 0)
     return max(0, score)
 
 
-def calc_cash_runway(transactions: list) -> int:
+def calc_cash_runway(balance: float, daily_expense: float) -> int:
     """
     cash_runway = current_balance / avg_daily_expense
     """
-    credits = sum(t["amount"] for t in transactions if t["type"] == "credit")
-    debits = sum(t["amount"] for t in transactions if t["type"] == "debit")
-    balance = credits - debits
-
-    daily_expenses = [t["amount"] for t in transactions if t["type"] == "debit"]
-    avg_daily = (sum(daily_expenses) / 30) if daily_expenses else 1
-
-    return max(0, int(balance / avg_daily))
+    if daily_expense <= 0:
+        return 999
+    return round(max(0, balance / daily_expense))
 
 
 def calc_gst_days_remaining(transactions: list) -> int:
@@ -56,6 +53,57 @@ def get_dashboard(business_id: str):
     - gst_days_remaining, overdue_count, overdue_total
     - recent 3 risks
     """
+    if DEMO_MODE:
+        return {
+            "business_name": "Ravi Traders",
+            "health_score": 62,
+            "status": "Needs Attention",
+            "balance": -32000,
+            "change_percent": -18,
+            "trend": "declining",
+            "gst_days_remaining": 4,
+            "overdue_count": 1,
+            "overdue_total": 68500,
+            "cash_runway": 6,
+            "monthly_burn": 195000,
+            "high_risks_count": 2,
+            "medium_risks_count": 1,
+            "total_risks_count": 3,
+            "recent_risks": [
+                {
+                    "id": "1",
+                    "type": "CASH FLOW",
+                    "title": "Cash Crunch",
+                    "severity": "high",
+                    "description": "Projected shortfall within 6 days based on current burn rate",
+                    "recommended_action": "Reduce expenses or follow up on pending payments",
+                    "timestamp": "Today",
+                    "actionTaken": "Alert sent via WhatsApp"
+                },
+                {
+                    "id": "2",
+                    "type": "RECEIVABLES",
+                    "title": "Overdue Invoice",
+                    "severity": "high",
+                    "description": "₹68,500 from Sri Murugan Stationery overdue by 47 days",
+                    "recommended_action": "Follow up immediately with the client",
+                    "timestamp": "Today",
+                    "actionTaken": "Reminder queued"
+                },
+                {
+                    "id": "3",
+                    "type": "TAX",
+                    "title": "GST Deadline",
+                    "severity": "medium",
+                    "description": "GST filing due in 4 days",
+                    "recommended_action": "Prepare and file GSTR-3B",
+                    "timestamp": "Today",
+                    "actionTaken": "Deadline tracked"
+                }
+            ],
+            "actions": []
+        }
+
     try:
         # Last 30 days of transactions
         since = (date.today() - timedelta(days=30)).isoformat()
@@ -65,15 +113,15 @@ def get_dashboard(business_id: str):
             .gte("date", since) \
             .execute()
         transactions = tx_res.data or []
-
+ 
         # Unresolved risks
         risk_res = supabase.table("risks") \
             .select("*") \
             .eq("business_id", business_id) \
-            .eq("is_resolved", False) \
+            .eq("status", "open") \
             .execute()
         risks = risk_res.data or []
-
+ 
         # Overdue invoices: client credits older than 30 days with no matching debit
         all_tx_res = supabase.table("transactions") \
             .select("*") \
@@ -87,12 +135,12 @@ def get_dashboard(business_id: str):
         ]
         overdue_count = len(overdue_txs)
         overdue_total = sum(t["amount"] for t in overdue_txs)
-
+ 
         balance = sum(
             t["amount"] if t["type"] == "credit" else -t["amount"]
             for t in transactions
         )
-
+ 
         # Simple trend: compare first half vs second half of window
         mid = len(transactions) // 2
         first_half_net = sum(
@@ -105,12 +153,15 @@ def get_dashboard(business_id: str):
         )
         trend = "improving" if second_half_net > first_half_net else \
                 "declining" if second_half_net < first_half_net else "stable"
+ 
+        daily_expenses = [t["amount"] for t in transactions if t["type"] == "debit"]
+        avg_daily = (sum(daily_expenses) / 30) if daily_expenses else 0
 
         return {
             "business_id": business_id,
             "balance": round(balance, 2),
             "health_score": calc_health_score(risks),
-            "cash_runway": calc_cash_runway(transactions),
+            "cash_runway": calc_cash_runway(balance, avg_daily),
             "gst_days_remaining": calc_gst_days_remaining(transactions),
             "overdue_count": overdue_count,
             "overdue_total": round(overdue_total, 2),

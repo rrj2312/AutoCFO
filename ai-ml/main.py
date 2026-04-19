@@ -8,6 +8,7 @@ import requests
 import httpx
 import asyncio
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,6 +19,16 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
 WHATSAPP_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN")
 OWNER_WHATSAPP_NUMBER = os.getenv("OWNER_WHATSAPP_NUMBER")
+
+
+def load_demo_data():
+    """Loads fallback data from demo_data.json."""
+    try:
+        with open("demo_data.json", "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading demo data: {e}")
+        return {"business": "Unknown", "transactions": [], "overdue_invoices": []}
 
 
 def post_to_backend(endpoint: str, data: dict):
@@ -61,7 +72,7 @@ def send_whatsapp_alert(risk: dict):
         print(f"[WhatsApp] Failed: {e}")
 
 
-def run_full_analysis(business_id: str, transactions: list, industry: str = "wholesale"):
+def run_full_analysis(business_id: str, transactions: list, industry: str = "wholesale", overdue_invoices: list = None):
     """
     Master analysis function. Called after CSV ingestion.
     Runs all 4 modules and saves results to backend.
@@ -98,6 +109,18 @@ def run_full_analysis(business_id: str, transactions: list, industry: str = "who
             "recommended_action": "File GSTR-3B before the deadline."
         })
 
+    # 4. Handle overdue invoices (save as risks)
+    if overdue_invoices:
+        for inv in overdue_invoices:
+            post_to_backend("/risks/save", {
+                "business_id": business_id,
+                "risk_type": "Overdue Invoice",
+                "severity": "medium",
+                "title": f"Overdue: {inv['client']}",
+                "description": f"Invoice of ₹{inv['amount']} is {inv['due_days']} days overdue.",
+                "recommended_action": "Follow up with client for payment."
+            })
+
     print("Analysis complete.")
     return {"risks": risks, "forecast": forecast, "gst": gst}
 
@@ -106,8 +129,17 @@ def run_full_analysis(business_id: str, transactions: list, industry: str = "who
 def analyze(payload: dict = Body(...)):
     business_id = payload.get("business_id", "demo_001")
     transactions = payload.get("transactions", [])
+    overdue_invoices = payload.get("overdue_invoices", [])
+    
+    # Use demo data if payload is empty
+    if not transactions and not overdue_invoices:
+        demo_data = load_demo_data()
+        transactions = demo_data["transactions"]
+        overdue_invoices = demo_data["overdue_invoices"]
+        print("Using fallback demo data")
+
     industry = payload.get("industry", "wholesale")
-    result = run_full_analysis(business_id, transactions, industry)
+    result = run_full_analysis(business_id, transactions, industry, overdue_invoices)
     return {"status": "done", "result": result}
 
 

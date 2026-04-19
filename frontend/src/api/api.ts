@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-const BUSINESS_ID = "demo_001";
+export const BUSINESS_ID = "demo_001";
 
 // Dashboard
 export const getDashboard = () =>

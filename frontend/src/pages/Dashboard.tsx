@@ -6,8 +6,11 @@ import { Card } from '../components/Card';
 import { DashboardSkeleton } from '../components/LoadingSkeleton';
 
 interface DashboardData {
+  businessName: string;
   healthScore: number;
+  totalRisksCount: number;
   highRisksCount: number;
+  mediumRisksCount: number;
   cashFlow: { balance: number; trend: string; changePercent: number; severity: string };
   gstStatus: { daysRemaining: number; severity: string; nextDeadline: string };
   overdueInvoices: { count: number; totalValue: number; severity: string };
@@ -20,8 +23,8 @@ function HealthGauge({ score }: { score: number }) {
   const circumference = 2 * Math.PI * r;
   const dashLength = circumference * 0.75;
   const offset = dashLength - (score / 100) * dashLength;
-  const color = score >= 71 ? '#00FF87' : score >= 41 ? '#FFB800' : '#FF4C4C';
-  const label = score >= 71 ? 'Healthy' : score >= 41 ? 'At Risk' : 'Critical';
+  const color = score >= 80 ? '#00FF87' : score >= 50 ? '#FFB800' : '#FF4C4C';
+  const label = score >= 80 ? 'Healthy' : score >= 50 ? 'Needs Attention' : 'Critical';
 
   return (
     <div className="flex flex-col items-center">
@@ -58,35 +61,45 @@ export default function Dashboard() {
 
   useEffect(() => {
     getDashboard().then((res) => {
-      const d = res.data;
+      const d = res?.data;
+      if (!d) {
+        setLoading(false);
+        return;
+      }
 
       setData({
-        healthScore: d.health_score,
-        highRisksCount: d.recent_risks?.length ?? 0,
+        businessName: d.business_name || 'Mehta Enterprises',
+        healthScore: d.health_score ?? 0,
+        totalRisksCount: d.total_risks_count ?? (d.recent_risks?.length ?? 0),
+        highRisksCount: d.high_risks_count ?? 0,
+        mediumRisksCount: d.medium_risks_count ?? 0,
         cashFlow: {
-          balance: d.balance,
-          trend: d.trend,
-          changePercent: 0,
+          balance: d.balance ?? 0,
+          trend: d.trend ?? 'stable',
+          changePercent: d.change_percent ?? 0,
           severity: 'ok',
         },
         gstStatus: {
-          daysRemaining: d.gst_days_remaining,
+          daysRemaining: d.gst_days_remaining ?? 0,
           severity: 'ok',
           nextDeadline: '',
         },
         overdueInvoices: {
-          count: d.overdue_count,
-          totalValue: d.overdue_total,
+          count: d.overdue_count ?? 0,
+          totalValue: d.overdue_total ?? 0,
           severity: 'warning',
         },
         cashRunway: {
-          days: d.cash_runway,
-          monthlyBurn: 0,
+          days: d.cash_runway ?? 0,
+          monthlyBurn: d.monthly_burn ?? 0,
           severity: 'ok',
         },
-        recentActions: [],
+        recentActions: d.recent_actions ?? [],
       });
 
+      setLoading(false);
+    }).catch(err => {
+      console.error("Dashboard fetch failed:", err);
       setLoading(false);
     });
   }, []);
@@ -106,8 +119,10 @@ export default function Dashboard() {
     {
       label: 'Cash Flow',
       value: formatCurrency(data.cashFlow.balance),
-      sub: `${data.cashFlow.changePercent > 0 ? '+' : ''}${data.cashFlow.changePercent}% this week`,
-      icon: data.cashFlow.trend === 'down' ? <TrendingDown size={16} className="text-[#FF4C4C]" /> : <TrendingUp size={16} className="text-[#00FF87]" />,
+      sub: data.cashFlow.changePercent !== 0
+        ? `${data.cashFlow.changePercent > 0 ? '↑' : '↓'} ${Math.abs(data.cashFlow.changePercent)}% this week`
+        : 'Stable this week',
+      icon: data.cashFlow.trend === 'declining' || data.cashFlow.changePercent < 0 ? <TrendingDown size={16} className="text-[#FF4C4C]" /> : <TrendingUp size={16} className="text-[#00FF87]" />,
       severity: data.cashFlow.severity,
     },
     {
@@ -143,7 +158,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-[#F9FAFB] font-heading">Good morning,</h1>
-          <p className="text-[#6B7280] text-sm">Mehta Enterprises</p>
+          <p className="text-[#6B7280] text-sm">{data.businessName}</p>
         </div>
         <button className="relative w-9 h-9 flex items-center justify-center bg-[#111827] rounded-xl border border-[#1F2937] hover:bg-[#1a2235] transition-colors">
           <Bell size={17} className="text-[#9CA3AF]" />
@@ -158,14 +173,14 @@ export default function Dashboard() {
         <HealthGauge score={data.healthScore} />
         <div className="text-center mt-3">
           <span className="text-sm text-[#FFB800] font-medium">
-            {data.highRisksCount} high risk{data.highRisksCount !== 1 ? 's' : ''} detected today
+            {data.totalRisksCount} risk{data.totalRisksCount !== 1 ? 's' : ''} detected today ({data.highRisksCount} high, {data.mediumRisksCount} medium)
           </span>
           <br />
           <button
             onClick={() => navigate('/risks')}
             className="text-xs text-[#6B7280] mt-1 hover:text-[#9CA3AF] transition-colors underline underline-offset-2"
           >
-            View all risks →
+            View all risks
           </button>
         </div>
       </Card>

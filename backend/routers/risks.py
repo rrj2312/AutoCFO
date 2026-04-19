@@ -5,8 +5,43 @@ from services.whatsapp import send_whatsapp
 
 router = APIRouter()
 
+from config import DEMO_MODE
+
 @router.get("/risks/{business_id}")
 async def get_risks(business_id: str):
+    if DEMO_MODE:
+        return [
+            {
+                "id": "1",
+                "type": "CASH FLOW",
+                "title": "Cash Crunch",
+                "severity": "high",
+                "description": "Projected shortfall within 6 days based on current burn rate",
+                "recommended_action": "Reduce expenses or follow up on pending payments",
+                "timestamp": "Today",
+                "actionTaken": "Alert sent via WhatsApp"
+            },
+            {
+                "id": "2",
+                "type": "RECEIVABLES",
+                "title": "Overdue Invoice",
+                "severity": "high",
+                "description": "₹68,500 from Sri Murugan Stationery overdue by 47 days",
+                "recommended_action": "Follow up immediately with the client",
+                "timestamp": "Today",
+                "actionTaken": "Reminder queued"
+            },
+            {
+                "id": "3",
+                "type": "TAX",
+                "title": "GST Deadline",
+                "severity": "medium",
+                "description": "GST filing due in 4 days",
+                "recommended_action": "Prepare and file GSTR-3B",
+                "timestamp": "Today",
+                "actionTaken": "Deadline tracked"
+            }
+        ]
     response = supabase.table("risks").select("*").eq("business_id", business_id).execute()
     return response.data
 
