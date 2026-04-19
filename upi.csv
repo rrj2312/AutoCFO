@@ -1,0 +1,5 @@
+date,description,debit,credit,amount
+2026-01-01,Amazon Purchase,1200,,1200
+2026-01-03,Client Payment,,5000,5000
+2026-01-05,Office Rent,3000,,3000
+2026-01-07,Salary Credit,,10000,10000

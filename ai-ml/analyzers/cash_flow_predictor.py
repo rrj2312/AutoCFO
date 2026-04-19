@@ -1,5 +1,5 @@
-from utils.gemini_client import call_ai
-from utils.data_formatter import safe_parse_json, format_transactions_for_prompt
+from prompts.utils.gemini_client import call_ai
+from prompts.utils.data_formatter import safe_parse_json, format_transactions_for_prompt
 
 CASHFLOW_PROMPT = """You are a financial forecasting engine.
 

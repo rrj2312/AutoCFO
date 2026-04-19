@@ -1,36 +1,64 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from analyzers.risk_detector import detect_risks
 from analyzers.cash_flow_predictor import predict_cash_flow
 from analyzers.gst_checker import check_gst_deadline
 from analyzers.explainer import explain_risk
-from datetime import date
+from datetime import date, timedelta
 import requests
+import httpx
+import asyncio
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = FastAPI()
+
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
-N8N_URL = os.getenv("N8N_WEBHOOK_URL", "")
+WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID")
+WHATSAPP_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN")
+OWNER_WHATSAPP_NUMBER = os.getenv("OWNER_WHATSAPP_NUMBER")
 
 
 def post_to_backend(endpoint: str, data: dict):
-    """Helper to POST data to Person 1's FastAPI backend."""
+    """POST data to the FastAPI backend."""
     try:
         requests.post(f"{BACKEND_URL}{endpoint}", json=data, timeout=5)
     except Exception as e:
         print(f"Backend post failed to {endpoint}: {e}")
 
 
-def trigger_n8n_webhook(risk: dict, business_id: str):
-    """Fire n8n webhook for HIGH severity risks."""
-    if not N8N_URL:
+def send_whatsapp_alert(risk: dict):
+    """
+    Sends a WhatsApp message via Meta Cloud API for HIGH severity risks.
+    Runs synchronously using requests (simpler inside a sync function).
+    """
+    if not WHATSAPP_PHONE_NUMBER_ID or not WHATSAPP_ACCESS_TOKEN:
+        print("[WhatsApp] Credentials not configured — skipping alert.")
         return
+
+    url = f"https://graph.facebook.com/v19.0/{WHATSAPP_PHONE_NUMBER_ID}/messages"
+    headers = {
+        "Authorization": f"Bearer {WHATSAPP_ACCESS_TOKEN}",
+        "Content-Type": "application/json",
+    }
+    message = (
+        f"🚨 AutoCFO Alert\n"
+        f"Risk: {risk.get('risk_type', 'Unknown')}\n"
+        f"{risk.get('description', '')}\n"
+        f"Action: {risk.get('recommended_action', '')}"
+    )
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": OWNER_WHATSAPP_NUMBER,
+        "type": "text",
+        "text": {"body": message},
+    }
     try:
-        requests.post(N8N_URL, json={**risk, "business_id": business_id}, timeout=5)
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        print(f"[WhatsApp] Sent. Status: {response.status_code}")
     except Exception as e:
-        print(f"n8n trigger failed: {e}")
+        print(f"[WhatsApp] Failed: {e}")
 
 
 def run_full_analysis(business_id: str, transactions: list, industry: str = "wholesale"):
@@ -45,11 +73,10 @@ def run_full_analysis(business_id: str, transactions: list, industry: str = "who
     print(f"Found {len(risks)} risks")
 
     for risk in risks:
-        # Save each risk to backend
         post_to_backend("/risks/save", {**risk, "business_id": business_id})
-        # Fire WhatsApp alert for high severity
+        # Directly alert via WhatsApp for high severity (no n8n needed)
         if risk.get("severity") == "high":
-            trigger_n8n_webhook(risk, business_id)
+            send_whatsapp_alert(risk)
 
     # 2. Cash flow forecast
     credits = [t["amount"] for t in transactions if t.get("type") == "credit"]
@@ -61,18 +88,19 @@ def run_full_analysis(business_id: str, transactions: list, industry: str = "who
     post_to_backend("/dashboard/update", {**forecast, "business_id": business_id})
 
     # 3. GST check — use today minus 25 days as last filed (demo default)
-    from datetime import timedelta
     last_filed = date.today() - timedelta(days=25)
     gst = check_gst_deadline(last_filed)
     if gst["severity"] in ("high", "medium"):
-        post_to_backend("/risks/save", {**gst, "business_id": business_id})
+        post_to_backend("/risks/save", {
+            **gst,
+            "business_id": business_id,
+            "risk_type": "GST Deadline",
+            "recommended_action": "File GSTR-3B before the deadline."
+        })
 
     print("Analysis complete.")
     return {"risks": risks, "forecast": forecast, "gst": gst}
 
-
-# --- HTTP endpoint so Person 1 can call this service ---
-from fastapi import Body
 
 @app.post("/analyze")
 def analyze(payload: dict = Body(...)):
@@ -81,6 +109,7 @@ def analyze(payload: dict = Body(...)):
     industry = payload.get("industry", "wholesale")
     result = run_full_analysis(business_id, transactions, industry)
     return {"status": "done", "result": result}
+
 
 @app.get("/explain/{risk_id}")
 def explain(risk_id: str, risk_type: str = "", description: str = ""):

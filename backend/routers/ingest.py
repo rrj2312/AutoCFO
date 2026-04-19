@@ -93,40 +93,55 @@ async def ingest(
     upi_csv: UploadFile = File(None),
     gst_csv: UploadFile = File(None),
 ):
-    """
-    Accepts up to 3 CSV files (bank, UPI, GST).
-    Parses and inserts all transactions into Supabase.
-    Then triggers AI analysis via Person 2's module.
-    """
     all_transactions = []
 
-    for upload, source in [(bank_csv, "bank"), (upi_csv, "upi"), (gst_csv, "gst")]:
-        if upload is not None:
+    file_map = [
+        (bank_csv, "bank"),
+        (upi_csv, "upi"),
+        (gst_csv, "gst")
+    ]
+
+    for upload, source in file_map:
+        if upload and upload.filename:
             contents = await upload.read()
             parsed = parse_csv(contents, source)
+
             for tx in parsed:
                 tx["business_id"] = business_id
+
             all_transactions.extend(parsed)
 
-    if not all_transactions:
-        raise HTTPException(status_code=400, detail="No valid transaction data found in uploaded files.")
+    if len(all_transactions) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="No valid transaction data found in uploaded files"
+        )
 
     try:
         supabase.table("transactions").insert(all_transactions).execute()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"DB insert failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"DB insert failed: {str(e)}"
+        )
 
-    # Trigger AI analysis (Person 2's module runs separately on port 8001)
-    # Fire-and-forget via n8n or direct HTTP call
+    # optional AI trigger (non-blocking)
     try:
         import httpx
         async with httpx.AsyncClient() as client:
             await client.post(
                 "http://localhost:8001/analyze",
-                json={"business_id": business_id, "transactions": all_transactions},
-                timeout=5,
+                json={
+                    "business_id": business_id,
+                    "transactions": all_transactions
+                },
+                timeout=5
             )
     except Exception:
-        pass  # Don't block the response if AI service is down
+        pass
 
-    return {"status": "analysis triggered", "business_id": business_id, "rows_ingested": len(all_transactions)}
+    return {
+        "status": "success",
+        "business_id": business_id,
+        "rows_ingested": len(all_transactions)
+    }

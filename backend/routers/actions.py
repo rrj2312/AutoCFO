@@ -14,17 +14,21 @@ class ActionRequest(BaseModel):
 
 @router.get("/actions/{business_id}")
 def get_actions(business_id: str):
-    """
-    Returns the last 20 actions logged for a business, newest first.
-    """
     try:
-        result = supabase.table("actions_log") \
+        res = supabase.table("actions") \
             .select("*") \
             .eq("business_id", business_id) \
-            .order("created_at", desc=True) \
-            .limit(20) \
             .execute()
-        return result.data or []
+
+        return {
+            "actions": res.data or []
+        }
+
+    except Exception as e:
+        return {
+            "actions": [],
+            "error": str(e)
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

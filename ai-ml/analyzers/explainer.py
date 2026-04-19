@@ -1,4 +1,4 @@
-from utils.gemini_client import call_ai
+from prompts.utils.gemini_client import call_ai
 
 EXPLAIN_PROMPT = """You are AutoCFO explaining a financial risk to a small business owner in simple language.
 
